@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calentador solar de agua · Cálculo II</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff7e8;--bg2:#ffd89a;--fg:#14233c;--mut:#5b6b85;--a:#e67e00;--b:#1f6fd1;--card:#ffffffb3;--ln:#14233c26;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1325;--bg2:#1c3463;--fg:#f3f6ff;--mut:#9fb0d0;--a:#ffb23e;--b:#5aa8ff;--card:#ffffff14;--ln:#ffffff30}}
+:root[data-theme="dark"]{--bg:#0a1325;--bg2:#1c3463;--fg:#f3f6ff;--mut:#9fb0d0;--a:#ffb23e;--b:#5aa8ff;--card:#ffffff14;--ln:#ffffff30}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);font-family:Outfit,system-ui,-apple-system,"Segoe UI",sans-serif}
+.bg{position:fixed;inset:0;background:radial-gradient(60vmax 60vmax at 12% 8%,var(--bg2),transparent 60%),radial-gradient(50vmax 50vmax at 92% 92%,color-mix(in srgb,var(--b) 40%,transparent),transparent 60%);animation:dr 16s ease-in-out infinite alternate}
+@keyframes dr{to{transform:scale(1.2) translate(-3%,3%)}}
+.sun{position:absolute;right:-14vmin;top:-14vmin;width:56vmin;height:56vmin;border-radius:50%;background:radial-gradient(circle,var(--a) 0 28%,transparent 29%),repeating-conic-gradient(var(--a) 0 4deg,transparent 4deg 15deg);opacity:.45;animation:sp 50s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.s{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:2.4vmin;padding:5vmin 7vw 8vmin;opacity:0;pointer-events:none;transform:translateX(9vw) scale(.95);filter:blur(14px);transition:opacity .8s,transform .9s cubic-bezier(.2,.8,.2,1),filter .8s}
+.s.on{opacity:1;transform:none;filter:none;pointer-events:auto}
+.s.out{transform:translateX(-9vw) scale(.95)}
+.f{opacity:0;transform:translateY(4vmin) scale(.97);transition:opacity .7s,transform .8s cubic-bezier(.2,.8,.2,1)}
+.f.show{opacity:1;transform:none}
+h1,h2{margin:0;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+h1{font-size:clamp(2.4rem,10vmin,7rem)}
+h2{font-size:clamp(1.8rem,6.4vmin,4rem)}
+p{margin:0;font-size:clamp(1rem,3.1vmin,1.9rem);line-height:1.4}
+.m{color:var(--mut)}
+.g{background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:2.2vmin;padding:2.4vmin 2.8vmin;backdrop-filter:blur(10px)}
+.row{display:flex;gap:2vmin;flex-wrap:wrap}
+.row>*{flex:1 1 22vmin}
+.c{display:inline-block;padding:.45em 1.05em;border-radius:99px;background:var(--card);border:1px solid var(--ln);margin:0 .5vmin .8vmin 0;font-size:clamp(.85rem,2.6vmin,1.5rem)}
+math{font-size:clamp(1.6rem,7.4vmin,4.6rem)}
+.big{font-size:clamp(3rem,15vmin,9rem);font-weight:800;line-height:1}
+.hi{color:var(--a)}
+svg{width:100%;height:auto;display:block}
+.ln{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.2s cubic-bezier(.5,0,.2,1)}
+.show .ln{stroke-dashoffset:0}
+.show .l2{transition-delay:.4s}.show .l3{transition-delay:.8s}
+.dt{opacity:0;transition:opacity .6s 2.4s}.show .dt{opacity:1}
+.blks{display:flex;gap:1.4vmin}
+.blk{flex:1;height:9vmin;border-radius:1.6vmin;background:var(--card);border:1px solid var(--ln);transition:background .6s,box-shadow .6s;text-align:center;line-height:9vmin;font-weight:600}
+.show .blk:nth-child(-n+2){background:var(--a);color:#fff;box-shadow:0 0 4vmin var(--a);transition-delay:.7s}
+.ax{position:relative;height:7vmin;border-radius:99px;background:var(--card);border:1px solid var(--ln);overflow:hidden}
+.bd{position:absolute;left:20%;width:60%;top:0;bottom:0;background:linear-gradient(90deg,var(--b),var(--a));opacity:.55;transform:scaleX(0);transform-origin:left;transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
+.mk{position:absolute;left:67.5%;top:-100%;width:1.2vmin;bottom:0;background:var(--fg);border-radius:9px;transition:top 1s .9s cubic-bezier(.3,1.5,.5,1)}
+.show .bd{transform:none}.show .mk{top:0}
+#pb{position:fixed;left:0;bottom:env(safe-area-inset-bottom,0px);height:.7vmin;width:100%;background:linear-gradient(90deg,var(--a),var(--b));transform-origin:left;transform:scaleX(0);transition:transform .6s}
+#cn{position:fixed;right:3vmin;bottom:calc(env(safe-area-inset-bottom,0px) + 2vmin);font-size:.9rem;color:var(--mut)}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<section class="s"><div class="sun"></div>
+<p class="f m" data-g="0">Cálculo II · ERG-132 · UNACIFOR</p>
+<h1 class="f" data-g="0">Calentador solar<br><span class="g">de agua</span></h1>
+<div class="f" data-g="1"><span class="c">Alfredo Castillo</span><span class="c">Fanny García</span><span class="c">Genesis Gutiérrez</span><span class="c">Joseth Banegas</span><span class="c">Miguel Padilla</span><span class="c">Osman Betancourth</span><span class="c">René Bautista</span></div>
+<p class="f m" data-g="1">Docente: MSc. Andrea Aguilar · Clic, → o espacio para avanzar · F para pantalla completa</p>
+</section>
+
+<section class="s">
+<h2 class="f" data-g="0">La pregunta de investigación</h2>
+<p class="f" data-g="1">¿Cuánta energía térmica queda acumulada en el agua durante <b class="hi">0 a 5 horas</b>, si la potencia térmica varía con el tiempo?</p>
+<div class="f card" data-g="2" style="text-align:center"><math display="block"><mrow><mi>P</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mn>10</mn><mo>+</mo><mn>2</mn><mi>t</mi></mrow></math><p class="m">P en watts · t en horas</p></div>
+</section>
+
+<section class="s">
+<h2 class="f" data-g="0">El prototipo</h2>
+<div class="row">
+<div class="f card" data-g="1"><h2 class="hi">1</h2><p>Serpentín de tubos y codos de <b>PVC</b></p></div>
+<div class="f card" data-g="2"><h2 class="hi">2</h2><p>Pintado de <b>negro</b> para absorber el calor</p></div>
+<div class="f card" data-g="3"><h2 class="hi">3</h2><p><b>Llave de paso</b> y estructura de soporte</p></div>
+</div>
+<p class="f g" data-g="4" style="font-size:clamp(1.3rem,5vmin,3rem);font-weight:800">☀️ Sol → tubo negro → agua caliente</p>
+</section>
+
+<section class="s">
+<h2 class="f" data-g="0">La prueba de campo</h2>
+<div class="f" data-g="0"><span class="c">Domingo 15 de noviembre de 2026</span><span class="c">Siguatepeque, Comayagua</span><span class="c">Parcialmente soleado</span><span class="c">25 °C máx.</span><span class="c">69 % humedad</span><span class="c">14.5 km/h viento</span></div>
+<div class="row" style="align-items:center">
+<div class="f card" data-g="1" style="flex:3 1 50vmin"><svg id="ch" viewBox="0 0 600 300"></svg></div>
+<div class="f card" data-g="2" style="text-align:center"><p class="m">El agua subió</p><div class="big g">+<span class="n" data-to="13.5" data-d="1">0</span> °C</div><p class="m">de 20 °C a 33.5 °C</p></div>
+</div>
+</section>
+
+<section class="s">
+<h2 class="f" data-g="0">Aplicamos la integral</h2>
+<div class="f" data-g="1"><math display="block"><mrow><mi>E</mi><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mn>5</mn></msubsup><mo>(</mo><mn>10</mn><mo>+</mo><mn>2</mn><mi>t</mi><mo>)</mo><mi>d</mi><mi>t</mi></mrow></math></div>
+<div class="f" data-g="2"><math display="block"><mrow><mi>E</mi><mo>=</mo><msubsup><mrow><mo>[</mo><mn>10</mn><mi>t</mi><mo>+</mo><msup><mi>t</mi><mn>2</mn></msup><mo>]</mo></mrow><mn>0</mn><mn>5</mn></msubsup></mrow></math></div>
+<div class="f" data-g="3"><math display="block"><mrow><mi>E</mi><mo>=</mo><mo>(</mo><mn>50</mn><mo>+</mo><mn>25</mn><mo>)</mo><mo>−</mo><mn>0</mn></mrow></math></div>
+<div class="f big g" data-g="4">E = <span class="n" data-to="75">0</span> W·h</div>
+</section>
+
+<section class="s">
+<h2 class="f" data-g="0">Solo 2 de las 5 horas fueron de sol útil</h2>
+<div class="f blks" data-g="1"><div class="blk">1 h</div><div class="blk">2 h</div><div class="blk">3 h</div><div class="blk">4 h</div><div class="blk">5 h</div></div>
+<div class="f" data-g="2"><math display="block"><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mo>×</mo><mn>100</mn></mrow><mn>5</mn></mfrac><mo>=</mo><mn>40</mn><mo>%</mo></mrow></math></div>
+<div class="f big g" data-g="3">75 × 0.40 = <span class="n" data-to="30">0</span> W·h</div>
+</section>
+
+<section class="s">
+<h2 class="f" data-g="0">Dentro de lo reportado en la literatura</h2>
+<p class="f m" data-g="1">Aumento de temperatura del agua (°C) · López Martínez et al. (2012): de 4 a 16 °C</p>
+<div class="f ax" data-g="1"><div class="bd"></div><div class="mk"></div></div>
+<p class="f" data-g="2">Nuestro prototipo: <b class="hi">13.5 °C</b></p>
+<div class="f" data-g="3"><span class="c">Agua final: referencia 25 a 36 °C · prototipo 33.5 °C</span><span class="c">Ninguno alcanzó los 40 °C del agua caliente sanitaria</span></div>
+</section>
+
+<section class="s">
+<h2 class="f" data-g="0">Conclusiones</h2>
+<div class="row">
+<div class="f card" data-g="1"><h2 class="hi">Logrado</h2><p>El prototipo calentó el agua 13.5 °C. La integral permite calcular la energía cuando la potencia varía.</p></div>
+<div class="f card" data-g="2"><h2 class="hi">Límites</h2><p>Una sola prueba, cielo parcialmente soleado, sin aislamiento ni acumulador, con viento.</p></div>
+<div class="f card" data-g="3"><h2 class="hi">Mejoras</h2><p>Repetir en días despejados, aislar los tubos y medir cada 30 minutos.</p></div>
+</div>
+<div class="f big g" data-g="4">¿Preguntas?</div>
+</section>
+
+<div id="pb"></div><div id="cn"></div>
+<script>
+(function(){
+var H=['10:00','11:00','12:00','1:00','2:00','3:00'],A=[21.5,23,25,25,24,22.5],I=[20,23,26.5,30.5,33,34],F=[23,26.5,30.5,33,34,33.5];
+var X=function(i){return 70+i*92},Y=function(t){return 250-(t-18)*12.2};
+function d(a){return 'M'+a.map(function(t,i){return X(i)+' '+Y(t)}).join('L')}
+var s='';
+[20,25,30,35].forEach(function(t){s+='<line x1="50" x2="560" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="var(--ln)"/><text x="8" y="'+(Y(t)+5)+'" fill="var(--mut)" font-size="15">'+t+' °C</text>'});
+H.forEach(function(h,i){s+='<text x="'+X(i)+'" y="285" fill="var(--mut)" font-size="15" text-anchor="middle">'+h+'</text>'});
+s+='<path class="ln l1" pathLength="1" stroke="var(--mut)" d="'+d(A)+'"/><path class="ln l2" pathLength="1" stroke="var(--a)" d="'+d(I)+'"/><path class="ln l3" pathLength="1" stroke="var(--b)" d="'+d(F)+'"/>';
+F.forEach(function(t,i){s+='<circle class="dt" cx="'+X(i)+'" cy="'+Y(t)+'" r="5" fill="var(--b)"/>'});
+s+='<text x="70" y="20" fill="var(--mut)" font-size="15">Ambiente</text><text x="160" y="20" fill="var(--a)" font-size="15">Agua inicial</text><text x="270" y="20" fill="var(--b)" font-size="15">Agua final</text>';
+document.getElementById('ch').innerHTML=s;
+
+var S=[].slice.call(document.querySelectorAll('.s')),cur=0,st=0,mx=S.map(function(e){var m=0;[].forEach.call(e.querySelectorAll('.f'),function(f){m=Math.max(m,+f.dataset.g)});return m});
+function cu(el){var to=+el.dataset.to,dc=+(el.dataset.d||0),t0=performance.now();(function f(t){var k=Math.min(1,Math.max(0,(t-t0-400)/1500)),e=1-Math.pow(1-k,3);el.textContent=(to*e).toFixed(dc);if(k<1)requestAnimationFrame(f)})(t0)}
+function R(){
+S.forEach(function(e,i){e.classList.toggle('on',i===cur);e.classList.toggle('out',i<cur);
+[].forEach.call(e.querySelectorAll('.f'),function(f){f.classList.toggle('show',i<cur||(i===cur&&+f.dataset.g<=st))});
+if(i<=cur)[].forEach.call(e.querySelectorAll('.n'),function(n){if(n.closest('.f.show')&&!n._d){n._d=1;cu(n)}})});
+document.getElementById('pb').style.transform='scaleX('+((cur+(mx[cur]?st/mx[cur]:1))/S.length)+')';
+document.getElementById('cn').textContent=(cur+1)+' / '+S.length}
+function N(){if(st<mx[cur])st++;else if(cur<S.length-1){cur++;st=0}R()}
+function B(){if(st>0)st--;else if(cur>0){cur--;st=mx[cur]}R()}
+document.addEventListener('keydown',function(e){var k=e.key;
+if(k==='ArrowRight'||k===' '||k==='PageDown'||k==='Enter'){e.preventDefault();N()}
+else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();B()}
+else if(k==='Home'){cur=0;st=0;R()}else if(k==='End'){cur=S.length-1;st=mx[cur];R()}
+else if(k==='f'||k==='F'){try{document.documentElement.requestFullscreen()}catch(x){}}});
+var x0=0,sk=0;
+document.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60){sk=1;setTimeout(function(){sk=0},400);dx<0?N():B()}},{passive:true});
+document.addEventListener('click',function(e){if(sk)return;e.clientX<innerWidth*.3?B():N()});
+R()})();
+</script>
+</body>
+</html>
